@@ -41,7 +41,7 @@ model User {
 model Cryptocurrency {
   crypto_id        Int            @id @default(autoincrement())
   name             String
-  symbol           String
+  symbol           String         @unique
   price_usd        Float          
   transactions     Transaction[]  
   crypto_wallet CryptoWallet[]
