@@ -21,7 +21,7 @@ router.post('/', async (req, res) => {
 router.get('/:userId', async (req, res) => {
     const { userId } = req.params;
     try {
-        const buyOrders = await prisma.buyOrder.findMany({ where: { user_id: Number(userId) } });
+        const buyOrders = await prisma.buyOrder.findMany({ where: { user_id: userId } });
         res.status(200).json(buyOrders);
     } catch (err) {
         res.status(500).json({ message: 'Error fetching buy orders', error: err });
