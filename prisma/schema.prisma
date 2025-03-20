@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  transaction_id    Int           @id @default(autoincrement())
+  from_user_id      Int
+  to_user_id        Int
+  crypto_id         Int
+  amount            Float
+  fiat_amount       Float
+  status            String        @default("Pending")
+  transaction_type  String
+  timestamp         DateTime      @default(now())
+
+  from_user         User          @relation("SentTransactions", fields: [from_user_id], references: [user_id])
+  to_user           User          @relation("ReceivedTransactions", fields: [to_user_id], references: [user_id])
+  cryptocurrency    Cryptocurrency @relation(fields: [crypto_id], references: [crypto_id])
+}
+
+model User {
+  user_id         Int             @id @default(autoincrement())
+  username        String
+  email           String          @unique
+  phone_number    String
+  password        String
+  fiat_balance    Float           @default(0)
+  crypto_wallet   CryptoWallet[]
+  transactions    Transaction[]   @relation("SentTransactions")
+  receivedTransactions Transaction[] @relation("ReceivedTransactions")
+  fiatTransaction    FiatTransaction[]
+  buy_orders BuyOrder[]
+  sell_orders SellOrder[]
+}
+
+model Cryptocurrency {
+  crypto_id        Int            @id @default(autoincrement())
+  name             String
+  symbol           String
+  price_usd        Float          
+  transactions     Transaction[]  
+  crypto_wallet CryptoWallet[]
+  buy_orders BuyOrder[]
+  sell_orders SellOrder[]
+}
+
+model CryptoWallet {
+  wallet_id    Int         @id @default(autoincrement())
+  user_id      Int
+  crypto_id    Int
+  balance      Float       @default(0)
+  user         User        @relation(fields: [user_id], references: [user_id])
+  cryptocurrency Cryptocurrency @relation(fields: [crypto_id], references: [crypto_id])
+  @@unique([user_id, crypto_id]) 
+}
+
+model FiatTransaction {
+  fiat_transaction_id Int       @id @default(autoincrement())
+  user_id             Int
+  amount             Float
+  fiat_type          String
+  transaction_type   String
+  transaction_date   DateTime  @default(now())
+  user               User      @relation(fields: [user_id], references: [user_id])
+}
+
+model BuyOrder {
+  buy_order_id   Int       @id @default(autoincrement())
+  user_id        Int
+  crypto_id      Int
+  amount         Float
+  fiat_amount    Float
+  status         String    @default("open")
+  timestamp      DateTime  @default(now())
+
+  user           User      @relation(fields: [user_id], references: [user_id])
+  cryptocurrency Cryptocurrency @relation(fields: [crypto_id], references: [crypto_id])
+}
+
+model SellOrder {
+  sell_order_id  Int       @id @default(autoincrement())
+  user_id        Int
+  crypto_id      Int
+  amount         Float
+  fiat_amount    Float
+  status         String    @default("open")
+  timestamp      DateTime  @default(now())
+
+  user           User      @relation(fields: [user_id], references: [user_id])
+  cryptocurrency Cryptocurrency @relation(fields: [crypto_id], references: [crypto_id])
+}
